@@ -1,0 +1,12 @@
+# file: meta/main.yml
+
+# Protobuf
+name: protobuf
+version: 3.13.0
+protobuf_url: https://github.com/protocolbuffers/{{name}}/releases/download/v{{version}}/protobuf-all-{{version}}.tar.gz
+protobuf_tmp: "/tmp/{{name}}-{{version}}.tar.gz"
+protobuf_build: "/tmp/{{name}}-{{version}}"
+protobuf_build_dir: "/tmp/{{name}}-{{version}}-build"
+protobuf_install_dir: "/opt/{{name}}-{{version}}"
+gcc_version: 8.2.0
+gcc_install_dir: "/opt/gcc-{{gcc_version}}"

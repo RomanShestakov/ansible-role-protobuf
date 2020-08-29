@@ -1,0 +1,49 @@
+# file: tasks/compile-protobuf.yml
+
+- name: PROTOBUF | clean build dir
+  file:
+    state: absent
+    path: "{{ protobuf_build }}"
+
+- name: PROTOBUF | Get sources
+  become: true
+  get_url: url={{ protobuf_url }} dest={{ protobuf_tmp }} timeout=180 force=no
+  register: protobuf_downloaded
+
+- name: PROTOBUF | Extract sources
+  become: true
+  unarchive: src={{ protobuf_tmp }}
+             dest="/tmp"
+             creates={{ protobuf_build }}
+             remote_src=yes
+  when: protobuf_downloaded.changed
+
+- name: PROTOBUF | Make build folder
+  become: true
+  file: path={{ protobuf_build_dir }} state=directory
+  when: protobuf_downloaded.changed
+
+- name: PROTOBUF | run cmake
+  command:  chdir="{{ protobuf_build_dir }}" \
+            cmake -G "Unix Makefiles" {{ protobuf_build }}/cmake \
+            -DCMAKE_C_COMPILER={{ gcc_install_dir }}/bin/gcc \
+            -DCMAKE_CXX_COMPILER={{ gcc_install_dir }}/bin/g++ \
+            -DGCC_INSTALL_PREFIX={{ gcc_install_dir }} \
+            -DCMAKE_CXX_LINK_FLAGS="-L{{ gcc_install_dir }}/lib64 -Wl,-rpath,{{ gcc_install_dir }}/lib64" \
+            -DCMAKE_INSTALL_RPATH="{{ gcc_install_dir }}/lib64" \
+            -DCMAKE_INSTALL_PREFIX={{ protobuf_install_dir }} \
+            -DLLVM_ENABLE_ASSERTIONS=ON \
+            -DCMAKE_BUILD_TYPE="Release" \
+            -DLLVM_TARGETS_TO_BUILD="X86" \
+            {{ protobuf_build }}/cmake
+  when: protobuf_downloaded.changed
+
+- name: PROTOBUF | Make
+  become: true
+  shell: chdir={{ protobuf_build_dir }} make
+  #when: protobuf_downloaded.changed
+
+- name: PROTOBUF | Install
+  become: true
+  shell: chdir={{ protobuf_build_dir }} make install
+  #when: protobuf_downloaded.changed
