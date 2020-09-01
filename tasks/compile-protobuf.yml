@@ -41,9 +41,9 @@
 - name: PROTOBUF | Make
   become: true
   shell: chdir={{ protobuf_build_dir }} make
-  #when: protobuf_downloaded.changed
+  when: protobuf_downloaded.changed
 
 - name: PROTOBUF | Install
   become: true
   shell: chdir={{ protobuf_build_dir }} make install
-  #when: protobuf_downloaded.changed
+  when: protobuf_downloaded.changed
