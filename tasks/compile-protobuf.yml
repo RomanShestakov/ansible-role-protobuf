@@ -1,9 +1,9 @@
 # file: tasks/compile-protobuf.yml
 
-- name: PROTOBUF | clean build dir
-  file:
-    state: absent
-    path: "{{ protobuf_build }}"
+# - name: PROTOBUF | clean build dir
+#   file:
+#     state: absent
+#     path: "{{ protobuf_build }}"
 
 - name: PROTOBUF | Get sources
   become: true
