@@ -1,3 +1,5 @@
+---
+
 # file: tasks/compile-protobuf.yml
 
 # - name: PROTOBUF | clean build dir
@@ -17,6 +19,7 @@
              creates={{ protobuf_build }}
              remote_src=yes
   when: protobuf_downloaded.changed
+  register: protobuf_sources
 
 - name: PROTOBUF | Make build folder
   become: true
@@ -32,18 +35,20 @@
             -DCMAKE_CXX_LINK_FLAGS="-L{{ gcc_install_dir }}/lib64 -Wl,-rpath,{{ gcc_install_dir }}/lib64" \
             -DCMAKE_INSTALL_RPATH="{{ gcc_install_dir }}/lib64" \
             -DCMAKE_INSTALL_PREFIX={{ protobuf_install_dir }} \
-            -DLLVM_ENABLE_ASSERTIONS=ON \
             -DCMAKE_BUILD_TYPE="Release" \
-            -DLLVM_TARGETS_TO_BUILD="X86" \
             {{ protobuf_build }}/cmake
-  when: protobuf_downloaded.changed
+  when: protobuf_sources.changed
+  register: protobuf_cmake
 
 - name: PROTOBUF | Make
   become: true
   shell: chdir={{ protobuf_build_dir }} make
-  when: protobuf_downloaded.changed
+  when: protobuf_cmake.changed
+  register: protobuf_make
 
 - name: PROTOBUF | Install
   become: true
   shell: chdir={{ protobuf_build_dir }} make install
-  when: protobuf_downloaded.changed
+  when: protobuf_make.changed
+
+...
