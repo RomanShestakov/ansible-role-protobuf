@@ -7,9 +7,15 @@
 #     state: absent
 #     path: "{{ protobuf_build }}"
 
+- name: PROTOBUF | check if install exists
+  stat:
+    path: "{{ protobuf_install_dir }}"
+  register: protobuf_exists
+
 - name: PROTOBUF | Get sources
   become: true
   get_url: url={{ protobuf_url }} dest={{ protobuf_tmp }} timeout=180 force=no
+  when: not protobuf_exists.stat.exists
   register: protobuf_downloaded
 
 - name: PROTOBUF | Extract sources
@@ -50,5 +56,21 @@
   become: true
   shell: chdir={{ protobuf_build_dir }} make install
   when: protobuf_make.changed
+  register: protobuf_install
+
+- name: PROTOBUF | cleanup build
+  become: true
+  file:
+    path: "{{ protobuf_build_dir }}"
+    state: absent
+  when: protobuf_install.changed
+
+- name: PROTOBUF | cleanup tmp
+  become: true
+  file:
+    path: "{{ protobuf_tmp }}"
+    state: absent
+  when: protobuf_install.changed
+
 
 ...
